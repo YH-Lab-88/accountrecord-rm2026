@@ -1,8 +1,8 @@
 {
   "name": "公账 RM2026",
   "short_name": "账 RM2026",
-  "id": "./",
-  "start_url": "./index.html?v=rm2026-2",
+"id": "./account-v2",
+"start_url": "./index.html?v=17",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
