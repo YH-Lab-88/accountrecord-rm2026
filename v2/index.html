@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <meta name="theme-color" content="#173b34" />
+    <title>公帐 RM2026</title>
+    <link rel="icon" type="image/png" href="./icon-account.png?v=14" />
+    <link rel="apple-touch-icon" href="./icon-account.png?v=14" />
+    <link rel="manifest" href="./manifest.webmanifest?v=2" />
+    <link rel="stylesheet" href="./styles.css?v=rm2026-2" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">RM2026</p>
+          <h1>公帐记录</h1>
+          <p class="subtitle">新增一笔资料，直接写入 Google Sheet</p>
+          <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1T6XxVZ3L6Wp0RmGe93ix931OaqVpBBklGRaI57TdTB4/edit?gid=1095480988#gid=1095480988" target="_blank" rel="noopener">打开 Google Sheet</a>
+        </div>
+        <div class="balance-box" aria-label="Balance">
+          <span>Balance</span>
+          <strong id="balanceAmount">RM —</strong>
+        </div>
+      </header>
+
+      <section class="card">
+        <form id="entryForm">
+          <label>日期
+            <div class="date-control">
+              <input id="date" name="date" type="text" inputmode="numeric" placeholder="日/月/年" autocomplete="off" required />
+              <button id="calendarButton" class="calendar-button" type="button" aria-label="选择日期">📅</button>
+              <input id="datePicker" class="date-picker-native" type="date" tabindex="-1" aria-hidden="true" />
+            </div>
+          </label>
+          <label>项目 <input id="item" name="item" type="text" placeholder="例如：晚餐、维修" required /></label>
+          <label>备注 <input id="other" name="other" type="text" placeholder="可不填" /></label>
+
+          <div class="money-grid">
+            <label class="money-field outgoing-field">出账（KT）<input id="kt" name="kt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" /></label>
+            <label class="money-field incoming-field">进账（DT）<input id="dt" name="dt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" /></label>
+          </div>
+
+          <button class="primary-button" type="submit">保存到 RM2026</button>
+          <p class="form-hint">进账和出账至少填写一项。</p>
+          <p id="status" class="status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <section class="card guide">
+        <div class="section-title"><h2>最近记录</h2><button id="clearButton" class="text-button" type="button">清除本机记录</button></div>
+        <div id="recentList" class="recent-list"><p class="empty">还没有本机记录</p></div>
+      </section>
+    </main>
+    <script src="./app.js?v=rm2026-1"></script>
+  </body>
+</html>

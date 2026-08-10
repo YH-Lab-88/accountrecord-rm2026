@@ -1,0 +1,19 @@
+{
+  "name": "公账 RM2026",
+  "short_name": "账 RM2026",
+"id": "./account-v3",
+"start_url": "./index.html?v=17",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f5ef",
+  "theme_color": "#12312b",
+  "icons": [
+    {
+      "src": "./icon-account.png?v=14",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
