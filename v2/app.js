@@ -29,9 +29,17 @@
 
   function money(value) { return value ? `RM ${Number(value).toFixed(2)}` : "—"; }
   function getRecent() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (_) { return []; } }
-  function renderRecent() {
-    const rows = getRecent();
-    recentList.innerHTML = rows.length ? rows.map((row, index) => `<article class="recent-row"><div><strong>${escapeHtml(row.item)}</strong><small>${row.displayDate || row.date}${row.other ? ` · ${escapeHtml(row.other)}` : ""}</small></div><div class="recent-actions"><span>${row.dt ? `+${money(row.dt)}` : `-${money(row.kt)}`}</span>${row.row ? `<button class="delete-button" type="button" data-index="${index}">删除</button>` : ""}</div></article>`).join("") : '<p class="empty">还没有本机记录</p>';
+  function renderRecent(rows) {
+    recentList.innerHTML = rows.length ? rows.map((row) => `<article class="recent-row"><div><strong>${escapeHtml(row.item)}</strong><small>${row.displayDate || row.date}${row.other ? ` · ${escapeHtml(row.other)}` : ""}</small></div><div class="recent-actions"><span>${row.dt ? `+${money(row.dt)}` : `-${money(row.kt)}`}</span>${row.row ? `<button class="delete-button" type="button" data-row="${row.row}">删除</button>` : ""}</div></article>`).join("") : '<p class="empty">还没有本机记录</p>';
+  }
+  async function loadRecent() {
+    if (!APPS_SCRIPT_URL) return renderRecent(getRecent());
+    try {
+      const response = await fetch(`${APPS_SCRIPT_URL}?records=30`);
+      const result = await response.json();
+      if (!response.ok || !Array.isArray(result.records)) throw new Error("records failed");
+      renderRecent(result.records);
+    } catch (_) { renderRecent(getRecent()); }
   }
   function renderBalance(value) { balanceAmount.textContent = value == null ? "RM —" : `RM ${Number(value).toFixed(2)}`; }
   function escapeHtml(value) { return String(value || "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char])); }
@@ -65,18 +73,16 @@
       } catch (_) { return setStatus("保存失败，请检查连接设置。", "error"); }
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify([payload, ...getRecent()].slice(0, 50)));
-    renderRecent();
+    await loadRecent();
     form.reset();
     date.value = displayDate(new Date());
     datePicker.value = new Date().toISOString().slice(0, 10);
   });
-  document.querySelector("#clearButton").addEventListener("click", () => { localStorage.removeItem(STORAGE_KEY); renderRecent(); });
+  document.querySelector("#clearButton").addEventListener("click", () => { localStorage.removeItem(STORAGE_KEY); loadRecent(); });
   recentList.addEventListener("click", async (event) => {
     const button = event.target.closest(".delete-button");
     if (!button) return;
-    const rows = getRecent();
-    const index = Number(button.dataset.index);
-    const row = rows[index];
+    const row = button.dataset.row ? { row: Number(button.dataset.row) } : null;
     if (!row || !row.row || !confirm("确定要删除这笔记录吗？Google Sheet 的对应记录也会被删除。")) return;
     if (!APPS_SCRIPT_URL) return setStatus("尚未连接 Google Sheet。", "error");
     button.disabled = true;
@@ -85,13 +91,12 @@
       const response = await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify({ action: "delete", row: row.row }) });
       const result = await response.json();
       if (!response.ok || !result.ok) throw new Error("delete failed");
-      const updatedRows = rows.filter((_, rowIndex) => rowIndex !== index).map((entry) => entry.row > row.row ? { ...entry, row: entry.row - 1 } : entry);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedRows));
-      renderRecent();
+      await loadRecent();
       if (typeof result.balance === "number") renderBalance(result.balance);
       setStatus("记录已删除。", "success");
     } catch (_) { button.disabled = false; setStatus("删除失败，请检查连接。", "error"); }
   });
-  renderRecent();
+  renderRecent(getRecent());
+  loadRecent();
   loadBalance();
 })();

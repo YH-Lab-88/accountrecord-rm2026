@@ -16,7 +16,19 @@ function getLastRecordRow(sheet) {
 function doGet() {
   const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
   const balance = getBalance(sheet);
-  return ContentService.createTextOutput(JSON.stringify({ ok: true, balance: balance })).setMimeType(ContentService.MimeType.JSON);
+  const lastRecordRow = getLastRecordRow(sheet);
+  const firstRecordRow = Math.max(2, lastRecordRow - 29);
+  const records = lastRecordRow >= 2
+    ? sheet.getRange(firstRecordRow, 1, lastRecordRow - firstRecordRow + 1, 5).getValues().map((values, index) => ({
+        row: firstRecordRow + index,
+        date: values[0] instanceof Date ? Utilities.formatDate(values[0], Session.getScriptTimeZone(), 'yyyy-MM-dd') : values[0],
+        item: values[1],
+        other: values[2],
+        dt: values[3],
+        kt: values[4]
+      })).reverse()
+    : [];
+  return ContentService.createTextOutput(JSON.stringify({ ok: true, balance: balance, records: records })).setMimeType(ContentService.MimeType.JSON);
 }
 
 function doPost(e) {
