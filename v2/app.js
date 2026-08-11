@@ -78,7 +78,7 @@
     date.value = displayDate(new Date());
     datePicker.value = new Date().toISOString().slice(0, 10);
   });
-  document.querySelector("#clearButton").addEventListener("click", () => { localStorage.removeItem(STORAGE_KEY); loadRecent(); });
+  document.querySelector("#clearButton").addEventListener("click", loadRecent);
   recentList.addEventListener("click", async (event) => {
     const button = event.target.closest(".delete-button");
     if (!button) return;
