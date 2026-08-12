@@ -89,6 +89,14 @@
     datePicker.value = new Date().toISOString().slice(0, 10);
   });
   document.querySelector("#clearButton").addEventListener("click", loadRecent);
+  document.querySelector("#syncButton").addEventListener("click", async (event) => {
+    const button = event.currentTarget;
+    button.disabled = true;
+    setStatus("正在更新 Sheet 资料…", "pending");
+    await Promise.all([loadRecent(), loadBalance()]);
+    button.disabled = false;
+    setStatus("资料已更新。", "success");
+  });
   recentList.addEventListener("click", async (event) => {
     const button = event.target.closest(".delete-button");
     if (!button) return;
