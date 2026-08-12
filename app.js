@@ -30,11 +30,12 @@
   });
 
   function money(value) { return value ? `RM ${Number(value).toFixed(2)}` : "—"; }
+  function recentDate(row) { const value = String(row.date || row.displayDate || ""); const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})/); return iso ? `${iso[3]}/${iso[2]}` : value.slice(0, 5); }
   function getRecent() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (_) { return []; } }
   function getCachedRecords() { try { return JSON.parse(localStorage.getItem(CACHE_RECORDS_KEY) || "[]"); } catch (_) { return []; } }
   function cacheRecords(rows) { localStorage.setItem(CACHE_RECORDS_KEY, JSON.stringify(rows.slice(0, 30))); }
   function renderRecent(rows) {
-    recentList.innerHTML = rows.length ? rows.map((row) => `<article class="recent-row"><div><strong>${escapeHtml(row.item)}</strong><small>${row.displayDate || row.date}${row.other ? ` · ${escapeHtml(row.other)}` : ""}</small></div><div class="recent-actions"><span>${row.dt ? `+${money(row.dt)}` : `-${money(row.kt)}`}</span>${row.row ? `<button class="delete-button" type="button" data-row="${row.row}">删除</button>` : ""}</div></article>`).join("") : '<p class="empty">还没有本机记录</p>';
+    recentList.innerHTML = rows.length ? rows.map((row) => `<article class="recent-row"><time>${escapeHtml(recentDate(row))}</time><div class="recent-item"><strong>${escapeHtml(row.item)}</strong>${row.other ? `<small>${escapeHtml(row.other)}</small>` : ""}</div><span class="recent-amount">${Number(row.dt || row.kt || 0).toFixed(2)}</span>${row.row ? `<button class="delete-button" type="button" data-row="${row.row}">删除</button>` : ""}</article>`).join("") : '<p class="empty">还没有本机记录</p>';
   }
   async function loadRecent() {
     const cached = getCachedRecords();
