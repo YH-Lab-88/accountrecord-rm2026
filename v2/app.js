@@ -2,6 +2,8 @@
   // Paste the deployed Google Apps Script Web App URL here.
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIwRIyAPAqbgTHhEL4FEHqDhpSd1htsDcJWuUr1rmVa6Vw0CTc4fZN5o_SWZ4uak9z/exec";
   const STORAGE_KEY = "rm2026-recent";
+  const CACHE_RECORDS_KEY = "rm2026-sheet-records-v1";
+  const CACHE_BALANCE_KEY = "rm2026-sheet-balance-v1";
   const form = document.querySelector("#entryForm");
   const status = document.querySelector("#status");
   const recentList = document.querySelector("#recentList");
@@ -29,27 +31,35 @@
 
   function money(value) { return value ? `RM ${Number(value).toFixed(2)}` : "—"; }
   function getRecent() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (_) { return []; } }
+  function getCachedRecords() { try { return JSON.parse(localStorage.getItem(CACHE_RECORDS_KEY) || "[]"); } catch (_) { return []; } }
+  function cacheRecords(rows) { localStorage.setItem(CACHE_RECORDS_KEY, JSON.stringify(rows.slice(0, 30))); }
   function renderRecent(rows) {
     recentList.innerHTML = rows.length ? rows.map((row) => `<article class="recent-row"><div><strong>${escapeHtml(row.item)}</strong><small>${row.displayDate || row.date}${row.other ? ` · ${escapeHtml(row.other)}` : ""}</small></div><div class="recent-actions"><span>${row.dt ? `+${money(row.dt)}` : `-${money(row.kt)}`}</span>${row.row ? `<button class="delete-button" type="button" data-row="${row.row}">删除</button>` : ""}</div></article>`).join("") : '<p class="empty">还没有本机记录</p>';
   }
   async function loadRecent() {
-    if (!APPS_SCRIPT_URL) return renderRecent(getRecent());
+    const cached = getCachedRecords();
+    if (cached.length) renderRecent(cached);
+    else if (!APPS_SCRIPT_URL) renderRecent(getRecent());
+    if (!APPS_SCRIPT_URL) return;
     try {
       const response = await fetch(`${APPS_SCRIPT_URL}?records=30`);
       const result = await response.json();
       if (!response.ok || !Array.isArray(result.records)) throw new Error("records failed");
+      cacheRecords(result.records);
       renderRecent(result.records);
-    } catch (_) { renderRecent(getRecent()); }
+    } catch (_) { if (!cached.length) renderRecent(getRecent()); }
   }
   function renderBalance(value) { balanceAmount.textContent = value == null ? "RM —" : `RM ${Number(value).toFixed(2)}`; }
   function escapeHtml(value) { return String(value || "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char])); }
   function setStatus(message, type) { status.textContent = message; status.className = `status ${type || ""}`; }
   async function loadBalance() {
     if (!APPS_SCRIPT_URL) return;
+    const cachedBalance = Number(localStorage.getItem(CACHE_BALANCE_KEY));
+    if (Number.isFinite(cachedBalance)) renderBalance(cachedBalance);
     try {
       const response = await fetch(APPS_SCRIPT_URL);
       const result = await response.json();
-      if (typeof result.balance === "number") renderBalance(result.balance);
+      if (typeof result.balance === "number") { localStorage.setItem(CACHE_BALANCE_KEY, String(result.balance)); renderBalance(result.balance); }
     } catch (_) { /* Keep the balance placeholder when the sheet is unavailable. */ }
   }
 
@@ -67,7 +77,7 @@
         const response = await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
         if (!response.ok) throw new Error("save failed");
         const result = await response.json();
-        if (typeof result.balance === "number") renderBalance(result.balance);
+        if (typeof result.balance === "number") { localStorage.setItem(CACHE_BALANCE_KEY, String(result.balance)); renderBalance(result.balance); }
         payload.row = result.row;
         setStatus("已保存到 RM2026。", "success");
       } catch (_) { return setStatus("保存失败，请检查连接设置。", "error"); }
