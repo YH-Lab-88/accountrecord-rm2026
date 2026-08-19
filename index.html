@@ -64,13 +64,13 @@
         <section class="calculator" role="dialog" aria-modal="true" aria-label="出账计算器">
           <div class="calculator-display" id="calculatorDisplay">0</div>
           <div class="calculator-grid">
-            <button data-calc="%">%</button><button data-calc="(">(</button><button data-calc=")">)</button><button data-calc="/" class="operator">÷</button>
+            <button data-calc="%">%</button><button data-calc="(">(</button><button data-calc=")">)</button><button id="calculatorBackspace" class="backspace">⌫</button>
             <button data-calc="7">7</button><button data-calc="8">8</button><button data-calc="9">9</button><button data-calc="*" class="operator">×</button>
             <button data-calc="4">4</button><button data-calc="5">5</button><button data-calc="6">6</button><button data-calc="-" class="operator">−</button>
-            <button data-calc="1">1</button><button data-calc="2">2</button><button data-calc="3">3</button><button data-calc="+" class="operator">＋</button>
-            <button data-calc=".">.</button><button data-calc="0">0</button><button id="calculatorClear" class="clear">清除</button><button id="calculatorBackspace" class="backspace">⌫</button>
+            <button data-calc="1">1</button><button data-calc="2">2</button><button data-calc="3">3</button><button data-calc="-" class="operator">−</button>
+            <button id="calculatorClear" class="clear">清除</button><button data-calc="0">0</button><button data-calc=".">.</button><button data-calc="+" class="operator plus">＋</button>
+            <button id="calculatorCancel" class="calculator-cancel" type="button">取消</button><button id="calculatorEquals" class="calculator-equals" type="button">＝</button>
           </div>
-          <div class="calculator-actions"><button id="calculatorCancel" type="button">取消</button><button id="calculatorEquals" type="button">＝</button></div>
         </section>
       </div>
       <div id="selectionPicker" class="calculator-backdrop" hidden>

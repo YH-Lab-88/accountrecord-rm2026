@@ -60,9 +60,10 @@ function doPost(e) {
   const dt = Number(data.dt) || 0;
   const kt = Number(data.kt) || 0;
   const newRow = lastRow + 1;
-  sheet.getRange(newRow, 1, 1, 5).setValues([[new Date(data.date), data.item, data.other || '', dt || '', kt || '']]);
+  const [year, month, day] = String(data.date).split('-');
+  const recordDate = `${month}/${day}/${year}`;
+  sheet.getRange(newRow, 1, 1, 5).setValues([[recordDate, data.item, data.other || '', dt || '', kt || '']]);
   sheet.getRange(newRow, 7).setValue(data.link || '');
-  sheet.getRange(newRow, 1).setNumberFormat('dd/MM/yyyy');
   SpreadsheetApp.flush();
   const balance = getBalance(sheet);
   return ContentService.createTextOutput(JSON.stringify({ ok: true, balance: balance, row: newRow })).setMimeType(ContentService.MimeType.JSON);

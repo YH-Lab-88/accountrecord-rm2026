@@ -44,6 +44,7 @@
   });
   const calculator = document.querySelector("#calculator");
   const calculatorDisplay = document.querySelector("#calculatorDisplay");
+  calculator.addEventListener("touchmove", (event) => event.preventDefault(), { passive: false });
   let calculatorExpression = "";
   function showCalculator() { calculatorExpression = ""; calculatorDisplay.textContent = "0"; calculator.hidden = false; }
   document.querySelector("#calculatorButton").addEventListener("click", showCalculator);
