@@ -42,10 +42,6 @@
   datePicker.addEventListener("change", () => {
     if (datePicker.value) date.value = displayDate(new Date(`${datePicker.value}T00:00:00`));
   });
-  document.querySelector("#driveButton").addEventListener("click", () => {
-    const driveTab = window.open("https://drive.google.com/drive/folders/1yJPZ0dnLxznNYjIB7kDiA9u6L21MA8s8", "_blank");
-    if (driveTab) driveTab.opener = null;
-  });
   const calculator = document.querySelector("#calculator");
   const calculatorDisplay = document.querySelector("#calculatorDisplay");
   let calculatorExpression = "";
