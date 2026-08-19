@@ -1,6 +1,6 @@
 {
-  "name": "公账 RM2026",
-  "short_name": "账 RM2026",
+  "name": "英宏公账",
+  "short_name": "英宏公账",
 "id": "./account-v2",
 "start_url": "./index.html?v=17",
   "scope": "./",
