@@ -29,6 +29,7 @@ input[type="number"]::-webkit-outer-spin-button { margin:0; -webkit-appearance:n
 input[type="text"]#date { display:block; width:100%; min-width:0; height:48px; text-align:left; font-size:1rem; line-height:1.2; }
 .date-row,.other-row { display:flex; align-items:center; gap:8px; min-width:0; }.date-control,.other-input-wrap { position:relative; min-width:0; flex:1; }.date-control input[type="text"],.other-input-wrap input { width:100%; }.action-spacer { width:48px; min-width:48px; min-height:48px; }
 .link-control { display:flex; align-items:center; gap:8px; min-width:0; }.link-input-wrap { position:relative; min-width:0; flex:1; }.link-control input { min-width:0; width:100%; padding-right:42px; }
+.paste-button { display:grid; place-items:center; width:48px; min-width:48px; min-height:48px; padding:9px; border:1px solid #e4c97a; border-radius:11px; color:var(--deep); background:#fff7dc; cursor:pointer; }.paste-button svg { display:block; width:28px; height:28px; }
 .drive-button { display:grid; place-items:center; width:48px; min-height:48px; padding:9px; border:1px solid #e4c97a; border-radius:11px; color:var(--deep); background:#fff7dc; cursor:pointer; }
 .drive-button svg { display:block; width:28px; height:28px; }
 .date-control #date { padding-right:13px; }.calendar-button { display:grid; place-items:center; width:48px; min-width:48px; min-height:48px; padding:9px; border:1px solid #e4c97a; border-radius:11px; color:var(--deep); background:#fff1bd; cursor:pointer; }

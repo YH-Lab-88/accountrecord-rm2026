@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#c9921a" />
-    <title>英宏公账 RM2026</title>
+    <title>公账 RM2026</title>
     <link rel="icon" type="image/png" href="./icon-account.png?v=14" />
     <link rel="apple-touch-icon" href="./icon-account.png?v=14" />
     <link rel="manifest" href="./manifest.webmanifest?v=2" />
@@ -14,7 +14,7 @@
     <main class="app-shell">
       <header class="topbar">
         <div>
-          <h1>英宏公账</h1>
+          <h1>公账</h1>
         </div>
           <div class="header-tools">
             <a class="sheet-link icon-action" href="https://docs.google.com/spreadsheets/d/1T6XxVZ3L6Wp0RmGe93ix931OaqVpBBklGRaI57TdTB4/edit?gid=1095480988#gid=1095480988" target="_blank" rel="noopener" aria-label="打开 Google Sheet" title="打开 Google Sheet"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M7 18h34M18 7v34M30 7v34" fill="none" stroke="currentColor" stroke-width="3"/></svg></a>
@@ -35,17 +35,15 @@
             </div>
           </label>
           <label>项目
-            <div class="item-control"><div class="item-input-wrap"><input id="item" name="item" type="text" placeholder="例如：晚餐、维修" required /><button id="itemClear" class="item-clear" type="button" aria-label="清空项目" title="清空项目">×</button></div><button id="selectionButton" class="selection-button" type="button" aria-label="选择项目" title="选择项目">☷</button></div>
+            <div class="item-control"><div class="item-input-wrap"><input id="item" name="item" type="text" placeholder="" required /><button id="itemClear" class="item-clear" type="button" aria-label="清空项目" title="清空项目">×</button></div><button id="selectionButton" class="selection-button" type="button" aria-label="选择项目" title="选择项目">☷</button></div>
           </label>
           <label>备注
-            <div class="other-row"><div class="other-input-wrap"><input id="other" name="other" type="text" placeholder="可不填" /><button id="otherClear" class="item-clear" type="button" aria-label="清空备注" title="清空备注">×</button></div><span class="action-spacer" aria-hidden="true"></span></div>
+            <div class="other-row"><div class="other-input-wrap"><input id="other" name="other" type="text" placeholder="" /><button id="otherClear" class="item-clear" type="button" aria-label="清空备注" title="清空备注">×</button></div><button id="driveButton" class="drive-button" type="button" aria-label="打开 Google Drive 文件夹" title="打开 Google Drive 文件夹"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M18 5h12l13 23H31L18 5Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M5 28 11 17l13 23H12L5 28ZM12 40h25l6-12H18L12 40Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg></button></div>
           </label>
           <label>链接
             <div class="link-control">
-              <div class="link-input-wrap"><input id="link" name="link" type="url" placeholder="可不填" /><button id="linkClear" class="item-clear" type="button" aria-label="清空链接" title="清空链接">×</button></div>
-              <button id="driveButton" class="drive-button" type="button" aria-label="打开 Google Drive 文件夹" title="打开 Google Drive 文件夹">
-                <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M18 5h12l13 23H31L18 5Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M5 28 11 17l13 23H12L5 28ZM12 40h25l6-12H18L12 40Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg>
-              </button>
+              <div class="link-input-wrap"><input id="link" name="link" type="url" placeholder="" /><button id="linkClear" class="item-clear" type="button" aria-label="清空链接" title="清空链接">×</button></div>
+              <button id="pasteButton" class="paste-button" type="button" aria-label="贴上链接" title="贴上链接"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="8" width="28" height="34" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M17 8V5h14v3M16 20h16M16 28h16M16 36h10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button>
             </div>
           </label>
 

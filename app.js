@@ -2,7 +2,7 @@
   // Paste the deployed Google Apps Script Web App URL here.
   const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxIwRIyAPAqbgTHhEL4FEHqDhpSd1htsDcJWuUr1rmVa6Vw0CTc4fZN5o_SWZ4uak9z/exec";
   const STORAGE_KEY = "rm2026-recent";
-  const CACHE_RECORDS_KEY = "rm2026-sheet-records-v1";
+  const CACHE_RECORDS_KEY = "rm2026-sheet-records-v2";
   const CACHE_BALANCE_KEY = "rm2026-sheet-balance-v1";
   const CACHE_SELECTION_KEY = "rm2026-selection-options-v1";
   const FORM_DRAFT_KEY = "rm2026-form-draft-v1";
@@ -43,7 +43,8 @@
     if (datePicker.value) date.value = displayDate(new Date(`${datePicker.value}T00:00:00`));
   });
   document.querySelector("#driveButton").addEventListener("click", () => {
-    window.open("https://drive.google.com/drive/folders/1yJPZ0dnLxznNYjIB7kDiA9u6L21MA8s8", "_blank", "noopener");
+    const driveTab = window.open("https://drive.google.com/drive/folders/1yJPZ0dnLxznNYjIB7kDiA9u6L21MA8s8", "_blank");
+    if (driveTab) driveTab.opener = null;
   });
   const calculator = document.querySelector("#calculator");
   const calculatorDisplay = document.querySelector("#calculatorDisplay");
@@ -66,7 +67,7 @@
   function recentDate(row) { const value = String(row.date || row.displayDate || ""); const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})/); return iso ? `${iso[3]}/${iso[2]}` : value.slice(0, 5); }
   function getRecent() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (_) { return []; } }
   function getCachedRecords() { try { return JSON.parse(localStorage.getItem(CACHE_RECORDS_KEY) || "[]"); } catch (_) { return []; } }
-  function cacheRecords(rows) { localStorage.setItem(CACHE_RECORDS_KEY, JSON.stringify(rows.slice(0, 30))); }
+  function cacheRecords(rows) { localStorage.setItem(CACHE_RECORDS_KEY, JSON.stringify(rows.slice(0, 100))); }
   function renderRecent(rows) {
     recentList.innerHTML = rows.length ? rows.map((row) => `<article class="recent-row"><time>${escapeHtml(recentDate(row))}</time><div class="recent-item"><strong>${escapeHtml(row.item)}</strong>${row.other ? `<small>${escapeHtml(row.other)}</small>` : ""}</div><span class="recent-amount">${Number(row.dt || row.kt || 0).toFixed(2)}</span>${row.row ? `<button class="delete-button" type="button" data-row="${row.row}">删除</button>` : ""}</article>`).join("") : '<p class="empty">还没有本机记录</p>';
   }
@@ -76,7 +77,7 @@
     else if (!APPS_SCRIPT_URL) renderRecent(getRecent());
     if (!APPS_SCRIPT_URL) return;
     try {
-      const response = await fetch(`${APPS_SCRIPT_URL}?records=30`);
+      const response = await fetch(`${APPS_SCRIPT_URL}?records=100`);
       const result = await response.json();
       if (!response.ok || !Array.isArray(result.records)) throw new Error("records failed");
       cacheRecords(result.records);
@@ -154,6 +155,15 @@
   document.querySelector("#selectionButton").addEventListener("click", async () => { selectionPicker.hidden = false; await loadSelectionOptions(); });
   document.querySelector("#itemClear").addEventListener("click", () => { document.querySelector("#item").value = ""; document.querySelector("#item").focus(); });
   document.querySelector("#linkClear").addEventListener("click", () => { document.querySelector("#link").value = ""; document.querySelector("#link").focus(); });
+  document.querySelector("#pasteButton").addEventListener("click", async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      document.querySelector("#link").value = text.trim();
+      saveFormDraft();
+      document.querySelector("#link").focus();
+      setStatus("链接已贴上。", "success");
+    } catch (_) { setStatus("无法读取剪贴板，请允许浏览器访问剪贴板。", "error"); }
+  });
   document.querySelector("#otherClear").addEventListener("click", () => { document.querySelector("#other").value = ""; document.querySelector("#other").focus(); });
   document.querySelector("#selectionClose").addEventListener("click", () => { selectionPicker.hidden = true; });
   document.querySelector("#selectionList").addEventListener("click", (event) => { const button = event.target.closest(".selection-option"); if (!button) return; document.querySelector("#item").value = button.dataset.value; selectionPicker.hidden = true; });

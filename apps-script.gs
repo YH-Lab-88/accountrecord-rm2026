@@ -19,7 +19,7 @@ function doGet() {
   const selectionSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('selection');
   const balance = getBalance(sheet);
   const lastRecordRow = getLastRecordRow(sheet);
-  const firstRecordRow = Math.max(2, lastRecordRow - 29);
+  const firstRecordRow = Math.max(2, lastRecordRow - 99);
   const records = lastRecordRow >= 2
     ? sheet.getRange(firstRecordRow, 1, lastRecordRow - firstRecordRow + 1, 5).getValues().map((values, index) => ({
         row: firstRecordRow + index,
