@@ -18,6 +18,7 @@ h1 { margin:0; font-size:2.35rem; line-height:1; }
 .card { padding:20px; margin-bottom:16px; border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,.9); box-shadow:var(--shadow); }
 form { display:grid; gap:15px; }
 label { display:grid; gap:7px; color:var(--muted); font-size:.83rem; font-weight:750; }
+form > label:not(.money-field) { grid-template-columns:52px minmax(0,1fr); align-items:center; gap:12px; }
 input { width:100%; min-height:48px; padding:0 13px; border:1px solid var(--line); border-radius:11px; color:var(--ink); background:#fbfdfb; }
 input[type="text"]#date { display:block; width:100%; min-width:0; height:48px; text-align:left; font-size:1rem; line-height:1.2; }
 .date-control { position:relative; display:flex; align-items:center; }

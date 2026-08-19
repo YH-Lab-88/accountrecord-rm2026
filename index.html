@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#c9921a" />
-    <title>公帐 RM2026</title>
+    <title>英宏公账 RM2026</title>
     <link rel="icon" type="image/png" href="./icon-account.png?v=14" />
     <link rel="apple-touch-icon" href="./icon-account.png?v=14" />
     <link rel="manifest" href="./manifest.webmanifest?v=2" />
@@ -14,42 +14,73 @@
     <main class="app-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">RM2026</p>
-          <h1>公帐记录</h1>
-          <p class="subtitle">新增一笔资料，直接写入 Google Sheet</p>
-          <a class="sheet-link" href="https://docs.google.com/spreadsheets/d/1T6XxVZ3L6Wp0RmGe93ix931OaqVpBBklGRaI57TdTB4/edit?gid=1095480988#gid=1095480988" target="_blank" rel="noopener">打开 Google Sheet</a>
+          <h1>英宏公账</h1>
         </div>
-        <div class="topbar-actions">
-          <button id="syncButton" class="sync-button" type="button">更新</button>
-          <div class="balance-box" aria-label="Balance">
-            <span>Balance</span>
-            <strong id="balanceAmount">RM —</strong>
+          <div class="header-tools">
+            <a class="sheet-link icon-action" href="https://docs.google.com/spreadsheets/d/1T6XxVZ3L6Wp0RmGe93ix931OaqVpBBklGRaI57TdTB4/edit?gid=1095480988#gid=1095480988" target="_blank" rel="noopener" aria-label="打开 Google Sheet" title="打开 Google Sheet"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M7 18h34M18 7v34M30 7v34" fill="none" stroke="currentColor" stroke-width="3"/></svg></a>
+            <button id="syncButton" class="sync-button icon-action" type="button" aria-label="更新资料" title="更新资料"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M40 20a16 16 0 0 0-28-7L8 17M8 17V8m0 9h9M8 28a16 16 0 0 0 28 7l4-4M40 31v9m0-9h-9" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <div class="balance-box" aria-label="Balance">
+              <span>Balance</span>
+              <strong id="balanceAmount">RM —</strong>
+            </div>
           </div>
-        </div>
       </header>
 
       <section class="card">
         <form id="entryForm">
           <label>日期
-            <div class="date-control">
-              <input id="date" name="date" type="text" inputmode="numeric" placeholder="日/月/年" autocomplete="off" required />
-              <button id="calendarButton" class="calendar-button" type="button" aria-label="选择日期">📅</button>
-              <input id="datePicker" class="date-picker-native" type="date" tabindex="-1" aria-hidden="true" />
+            <div class="date-row">
+              <div class="date-control"><input id="date" name="date" type="text" inputmode="numeric" placeholder="日/月/年" autocomplete="off" required /><input id="datePicker" class="date-picker-native" type="date" tabindex="-1" aria-hidden="true" /></div>
+              <button id="calendarButton" class="calendar-button" type="button" aria-label="选择日期" title="选择日期"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="9" width="34" height="32" rx="5" fill="none" stroke="currentColor" stroke-width="3"/><path d="M7 18h34M15 5v8M33 5v8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="16" cy="26" r="2" fill="currentColor"/><circle cx="24" cy="26" r="2" fill="currentColor"/><circle cx="32" cy="26" r="2" fill="currentColor"/><circle cx="16" cy="34" r="2" fill="currentColor"/><circle cx="24" cy="34" r="2" fill="currentColor"/></svg></button>
             </div>
           </label>
-          <label>项目 <input id="item" name="item" type="text" placeholder="例如：晚餐、维修" required /></label>
-          <label>备注 <input id="other" name="other" type="text" placeholder="可不填" /></label>
+          <label>项目
+            <div class="item-control"><div class="item-input-wrap"><input id="item" name="item" type="text" placeholder="例如：晚餐、维修" required /><button id="itemClear" class="item-clear" type="button" aria-label="清空项目" title="清空项目">×</button></div><button id="selectionButton" class="selection-button" type="button" aria-label="选择项目" title="选择项目">☷</button></div>
+          </label>
+          <label>备注
+            <div class="other-row"><div class="other-input-wrap"><input id="other" name="other" type="text" placeholder="可不填" /><button id="otherClear" class="item-clear" type="button" aria-label="清空备注" title="清空备注">×</button></div><span class="action-spacer" aria-hidden="true"></span></div>
+          </label>
+          <label>链接
+            <div class="link-control">
+              <div class="link-input-wrap"><input id="link" name="link" type="url" placeholder="可不填" /><button id="linkClear" class="item-clear" type="button" aria-label="清空链接" title="清空链接">×</button></div>
+              <button id="driveButton" class="drive-button" type="button" aria-label="打开 Google Drive 文件夹" title="打开 Google Drive 文件夹">
+                <svg viewBox="0 0 48 48" aria-hidden="true"><path d="M18 5h12l13 23H31L18 5Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M5 28 11 17l13 23H12L5 28ZM12 40h25l6-12H18L12 40Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </label>
 
           <div class="money-grid">
-            <label class="money-field outgoing-field">出账（KT）<input id="kt" name="kt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" /></label>
+            <label class="money-field outgoing-field">出账（KT）
+              <div class="money-input-control"><input id="kt" name="kt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" /><button id="calculatorButton" class="calculator-button" type="button" aria-label="打开计算器" title="打开计算器"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="9" y="4" width="30" height="40" rx="5" fill="none" stroke="currentColor" stroke-width="3"/><rect x="14" y="9" width="20" height="8" rx="2" fill="currentColor"/><circle cx="17" cy="24" r="2" fill="currentColor"/><circle cx="24" cy="24" r="2" fill="currentColor"/><circle cx="31" cy="24" r="2" fill="currentColor"/><circle cx="17" cy="32" r="2" fill="currentColor"/><circle cx="24" cy="32" r="2" fill="currentColor"/><circle cx="31" cy="32" r="2" fill="currentColor"/><circle cx="17" cy="40" r="2" fill="currentColor"/><circle cx="24" cy="40" r="2" fill="currentColor"/><circle cx="31" cy="40" r="2" fill="currentColor"/></svg></button></div>
+            </label>
             <label class="money-field incoming-field">进账（DT）<input id="dt" name="dt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" /></label>
           </div>
 
-          <button class="primary-button" type="submit">保存到 RM2026</button>
+          <button class="primary-button" type="submit">保存</button>
           <p class="form-hint">进账和出账至少填写一项。</p>
           <p id="status" class="status" role="status" aria-live="polite"></p>
         </form>
       </section>
+
+      <div id="calculator" class="calculator-backdrop" hidden>
+        <section class="calculator" role="dialog" aria-modal="true" aria-label="出账计算器">
+          <div class="calculator-display" id="calculatorDisplay">0</div>
+          <div class="calculator-grid">
+            <button data-calc="%">%</button><button data-calc="(">(</button><button data-calc=")">)</button><button data-calc="/" class="operator">÷</button>
+            <button data-calc="7">7</button><button data-calc="8">8</button><button data-calc="9">9</button><button data-calc="*" class="operator">×</button>
+            <button data-calc="4">4</button><button data-calc="5">5</button><button data-calc="6">6</button><button data-calc="-" class="operator">−</button>
+            <button data-calc="1">1</button><button data-calc="2">2</button><button data-calc="3">3</button><button data-calc="+" class="operator">＋</button>
+            <button data-calc=".">.</button><button data-calc="0">0</button><button id="calculatorClear" class="clear">清除</button><button id="calculatorBackspace" class="backspace">⌫</button>
+          </div>
+          <div class="calculator-actions"><button id="calculatorCancel" type="button">取消</button><button id="calculatorEquals" type="button">＝</button></div>
+        </section>
+      </div>
+      <div id="selectionPicker" class="calculator-backdrop" hidden>
+        <section class="selection-picker" role="dialog" aria-modal="true" aria-label="选择项目">
+          <div class="selection-header"><strong>选择项目</strong><button id="selectionClose" type="button">关闭</button></div>
+          <div id="selectionList" class="selection-list"><p class="empty">正在读取选项…</p></div>
+        </section>
+      </div>
 
       <section class="card guide">
         <div class="section-title"><h2>最近记录</h2><button id="clearButton" class="text-button" type="button">刷新记录</button></div>
