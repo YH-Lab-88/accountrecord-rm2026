@@ -14,6 +14,7 @@
   const balanceAmount = document.querySelector("#balanceAmount");
   const date = document.querySelector("#date");
   const datePicker = document.querySelector("#datePicker");
+  const serial = document.querySelector("#serial");
   function displayDate(dateObject) {
     const day = String(dateObject.getDate()).padStart(2, "0");
     const month = String(dateObject.getMonth() + 1).padStart(2, "0");
@@ -25,6 +26,27 @@
   }
   date.value = displayDate(new Date());
   datePicker.value = new Date().toISOString().slice(0, 10);
+  function serialDate(iso) { return iso ? iso.replaceAll("-", "") : ""; }
+  function formatSerial(iso, sequence) { return `${serialDate(iso)} ${String(sequence).padStart(2, "0")}`; }
+  function sequenceFromRows(iso, rows) {
+    const [year, month, day] = iso.split("-");
+    const sheetDate = `${month}/${day}/${year}`;
+    const displayValue = `${day}/${month}/${year}`;
+    return rows.filter((row) => [sheetDate, displayValue, iso].includes(String(row.date || row.displayDate || ""))).length + 1;
+  }
+  function cachedSequence(iso) { return sequenceFromRows(iso, getCachedRecords()); }
+  async function updateSerial() {
+    const iso = isoDate(date.value);
+    if (!iso) { serial.value = ""; return; }
+    serial.value = formatSerial(iso, cachedSequence(iso));
+    if (!APPS_SCRIPT_URL) return;
+    try {
+      const response = await fetch(`${APPS_SCRIPT_URL}?sequenceDate=${encodeURIComponent(iso)}`);
+      const result = await response.json();
+      if (response.ok && Number.isInteger(result.sequence)) serial.value = formatSerial(iso, result.sequence);
+      else if (response.ok && Array.isArray(result.records)) serial.value = formatSerial(iso, sequenceFromRows(iso, result.records));
+    } catch (_) { /* The cached number remains available while the sheet is offline. */ }
+  }
   function saveFormDraft() { localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(Object.fromEntries(new FormData(form).entries()))); }
   function restoreFormDraft() {
     try {
@@ -41,8 +63,9 @@
     else datePicker.click();
   });
   datePicker.addEventListener("change", () => {
-    if (datePicker.value) date.value = displayDate(new Date(`${datePicker.value}T00:00:00`));
+    if (datePicker.value) { date.value = displayDate(new Date(`${datePicker.value}T00:00:00`)); updateSerial(); }
   });
+  date.addEventListener("change", updateSerial);
   const calculator = document.querySelector("#calculator");
   const calculatorDisplay = document.querySelector("#calculatorDisplay");
   calculator.addEventListener("touchmove", (event) => event.preventDefault(), { passive: false });
@@ -156,6 +179,7 @@
     form.reset();
     date.value = displayDate(new Date());
     datePicker.value = new Date().toISOString().slice(0, 10);
+    updateSerial();
     saveButton.disabled = false;
   });
   document.querySelector("#clearButton").addEventListener("click", loadRecent);
@@ -180,6 +204,12 @@
       setStatus("链接已贴上。", "success");
     } catch (_) { setStatus("无法读取剪贴板，请允许浏览器访问剪贴板。", "error"); }
   });
+  document.querySelector("#serialCopyButton").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(serial.value);
+      setStatus("序号已复制。", "success");
+    } catch (_) { setStatus("无法复制序号，请允许浏览器访问剪贴板。", "error"); }
+  });
   document.querySelector("#otherClear").addEventListener("click", () => { document.querySelector("#other").value = ""; document.querySelector("#other").focus(); });
   document.querySelector("#selectionClose").addEventListener("click", () => { selectionPicker.hidden = true; });
   document.querySelector("#selectionList").addEventListener("click", (event) => { const button = event.target.closest(".selection-option"); if (!button) return; document.querySelector("#item").value = button.dataset.value; selectionPicker.hidden = true; });
@@ -203,6 +233,7 @@
     } catch (_) { button.disabled = false; setStatus("删除失败，请检查连接。", "error"); }
   });
   renderRecent(getRecent());
+  updateSerial();
   loadRecent();
   loadBalance();
 

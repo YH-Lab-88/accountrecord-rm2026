@@ -35,8 +35,22 @@ function getLastRecordRow(sheet) {
   return 1;
 }
 
-function doGet() {
+function getSequenceForDate(sheet, isoDate) {
+  const [year, month, day] = String(isoDate || '').split('-');
+  if (!year || !month || !day) return 1;
+  const target = `${month}/${day}/${year}`;
+  const values = sheet.getRange(2, 1, Math.max(1, sheet.getMaxRows() - 1), 1).getValues();
+  const matches = values.filter(([value]) => {
+    const recordDate = value instanceof Date ? Utilities.formatDate(value, Session.getScriptTimeZone(), 'MM/dd/yyyy') : String(value);
+    return recordDate === target;
+  }).length;
+  return matches + 1;
+}
+
+function doGet(e) {
   const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
+  const sequenceDate = e && e.parameter && e.parameter.sequenceDate;
+  if (sequenceDate) return jsonResponse({ ok: true, sequence: getSequenceForDate(sheet, sequenceDate) });
   const selectionSheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName('selection');
   const balance = getBalance(sheet);
   const lastRecordRow = getLastRecordRow(sheet);
