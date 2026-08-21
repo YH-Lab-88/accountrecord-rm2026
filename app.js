@@ -6,6 +6,7 @@
   const CACHE_BALANCE_KEY = "rm2026-sheet-balance-v1";
   const CACHE_SELECTION_KEY = "rm2026-selection-options-v1";
   const FORM_DRAFT_KEY = "rm2026-form-draft-v1";
+  const RECENT_RECORD_LIMIT = 38;
   const DEFAULT_SELECTION_OPTIONS = ["Low Salary", "Maxis 2267289110 Mr Tee"];
   const form = document.querySelector("#entryForm");
   const status = document.querySelector("#status");
@@ -64,7 +65,7 @@
   function recentDate(row) { const value = String(row.date || row.displayDate || ""); const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})/); return iso ? `${iso[3]}/${iso[2]}` : value.slice(0, 5); }
   function getRecent() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (_) { return []; } }
   function getCachedRecords() { try { return JSON.parse(localStorage.getItem(CACHE_RECORDS_KEY) || "[]"); } catch (_) { return []; } }
-  function cacheRecords(rows) { localStorage.setItem(CACHE_RECORDS_KEY, JSON.stringify(rows.slice(0, 100))); }
+  function cacheRecords(rows) { localStorage.setItem(CACHE_RECORDS_KEY, JSON.stringify(rows.slice(0, RECENT_RECORD_LIMIT))); }
   function renderRecent(rows) {
     recentList.innerHTML = rows.length ? rows.map((row) => `<article class="recent-row"><time>${escapeHtml(recentDate(row))}</time><div class="recent-item"><strong>${escapeHtml(row.item)}</strong>${row.other ? `<small>${escapeHtml(row.other)}</small>` : ""}</div><span class="recent-amount">${Number(row.dt || row.kt || 0).toFixed(2)}</span>${row.row ? `<button class="delete-button" type="button" data-row="${row.row}">删除</button>` : ""}</article>`).join("") : '<p class="empty">还没有本机记录</p>';
   }
@@ -74,7 +75,7 @@
     else if (!APPS_SCRIPT_URL) renderRecent(getRecent());
     if (!APPS_SCRIPT_URL) return;
     try {
-      const response = await fetch(`${APPS_SCRIPT_URL}?records=100`);
+      const response = await fetch(`${APPS_SCRIPT_URL}?records=${RECENT_RECORD_LIMIT}`);
       const result = await response.json();
       if (!response.ok || !Array.isArray(result.records)) throw new Error("records failed");
       cacheRecords(result.records);
@@ -102,6 +103,23 @@
   function renderBalance(value) { balanceAmount.textContent = value == null ? "RM —" : `RM ${Number(value).toFixed(2)}`; }
   function escapeHtml(value) { return String(value || "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" }[char])); }
   function setStatus(message, type) { status.textContent = message; status.className = `status ${type || ""}`; }
+  function requestId() { return globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`; }
+  async function postToSheet(payload, attempts = 2) {
+    let lastError;
+    for (let attempt = 0; attempt < attempts; attempt += 1) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30000);
+      try {
+        const response = await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload), signal: controller.signal });
+        if (!response.ok) throw new Error("save failed");
+        return await response.json();
+      } catch (error) {
+        lastError = error;
+        if (attempt + 1 < attempts) await new Promise((resolve) => setTimeout(resolve, 800));
+      } finally { clearTimeout(timeout); }
+    }
+    throw lastError;
+  }
   async function loadBalance() {
     if (!APPS_SCRIPT_URL) return;
     const cachedBalance = Number(localStorage.getItem(CACHE_BALANCE_KEY));
@@ -120,17 +138,17 @@
     if (data.dt && data.kt) return setStatus("一笔记录请只填写进账或出账其中一项。", "error");
     const normalizedDate = isoDate(data.date);
     if (!normalizedDate) return setStatus("日期请使用 日/月/年，例如 10/08/2026。", "error");
-    const payload = { date: normalizedDate, displayDate: data.date, item: data.item.trim(), other: data.other.trim(), link: data.link.trim(), dt: data.dt || "", kt: data.kt || "" };
+    const payload = { requestId: requestId(), date: normalizedDate, displayDate: data.date, item: data.item.trim(), other: data.other.trim(), link: data.link.trim(), dt: data.dt || "", kt: data.kt || "" };
+    const saveButton = form.querySelector('[type="submit"]');
+    saveButton.disabled = true;
     setStatus(APPS_SCRIPT_URL ? "正在保存…" : "界面已完成，但尚未连接 Google Sheet。", "pending");
     if (APPS_SCRIPT_URL) {
       try {
-        const response = await fetch(APPS_SCRIPT_URL, { method: "POST", body: JSON.stringify(payload) });
-        if (!response.ok) throw new Error("save failed");
-        const result = await response.json();
+        const result = await postToSheet(payload);
         if (typeof result.balance === "number") { localStorage.setItem(CACHE_BALANCE_KEY, String(result.balance)); renderBalance(result.balance); }
         payload.row = result.row;
         setStatus("已保存到 RM2026。", "success");
-      } catch (_) { return setStatus("保存失败，请检查连接设置。", "error"); }
+      } catch (_) { saveButton.disabled = false; return setStatus("保存失败，请检查网络后再试。资料草稿已保留。", "error"); }
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify([payload, ...getRecent()].slice(0, 50)));
     localStorage.removeItem(FORM_DRAFT_KEY);
@@ -138,6 +156,7 @@
     form.reset();
     date.value = displayDate(new Date());
     datePicker.value = new Date().toISOString().slice(0, 10);
+    saveButton.disabled = false;
   });
   document.querySelector("#clearButton").addEventListener("click", loadRecent);
   document.querySelector("#syncButton").addEventListener("click", async (event) => {
