@@ -18,8 +18,38 @@ function rememberRequest(requestId, result) {
 function setLinkCell(sheet, row, value) {
   const link = String(value || '').trim();
   if (!link) return sheet.getRange(row, 7).clearContent();
+  if (isDriveFileLink(link)) return setDriveFileChip(sheet, row, link);
   const richText = SpreadsheetApp.newRichTextValue().setText(link).setLinkUrl(link).build();
   sheet.getRange(row, 7).setRichTextValue(richText);
+}
+
+function isDriveFileLink(link) {
+  return /^https:\/\/(?:drive\.google\.com\/file\/d\/|docs\.google\.com\/(?:document|spreadsheets|presentation)\/d\/)/i.test(link);
+}
+
+function setDriveFileChip(sheet, row, link) {
+  Sheets.Spreadsheets.batchUpdate({
+    requests: [{
+      updateCells: {
+        range: { sheetId: sheet.getSheetId(), startRowIndex: row - 1, endRowIndex: row, startColumnIndex: 6, endColumnIndex: 7 },
+        rows: [{ values: [{ userEnteredValue: { stringValue: '@' }, chipRuns: [{ chip: { richLinkProperties: { uri: link } } }] }] }],
+        fields: 'userEnteredValue,chipRuns'
+      }
+    }]
+  }, SHEET_ID);
+}
+
+function shiftLinkCells(sheet, rowToDelete, lastRecordRow) {
+  if (rowToDelete >= lastRecordRow) return;
+  Sheets.Spreadsheets.batchUpdate({
+    requests: [{
+      copyPaste: {
+        source: { sheetId: sheet.getSheetId(), startRowIndex: rowToDelete, endRowIndex: lastRecordRow, startColumnIndex: 6, endColumnIndex: 7 },
+        destination: { sheetId: sheet.getSheetId(), startRowIndex: rowToDelete - 1, endRowIndex: lastRecordRow - 1, startColumnIndex: 6, endColumnIndex: 7 },
+        pasteType: 'PASTE_NORMAL'
+      }
+    }]
+  }, SHEET_ID);
 }
 
 function getBalance(sheet) {
@@ -89,8 +119,7 @@ function doPost(e) {
       if (rowToDelete < lastRecordRow) {
         const rowsBelow = sheet.getRange(rowToDelete + 1, 1, lastRecordRow - rowToDelete, 5).getValues();
         sheet.getRange(rowToDelete, 1, rowsBelow.length, 5).setValues(rowsBelow);
-        const linksBelow = sheet.getRange(rowToDelete + 1, 7, lastRecordRow - rowToDelete, 1).getRichTextValues();
-        sheet.getRange(rowToDelete, 7, linksBelow.length, 1).setRichTextValues(linksBelow);
+        shiftLinkCells(sheet, rowToDelete, lastRecordRow);
       }
       sheet.getRange(lastRecordRow, 1, 1, 5).clearContent();
       sheet.getRange(lastRecordRow, 7).clearContent();
