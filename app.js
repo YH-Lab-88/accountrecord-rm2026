@@ -52,7 +52,9 @@
     try {
       const draft = JSON.parse(localStorage.getItem(FORM_DRAFT_KEY) || "null");
       if (!draft) return;
-      ["date", "item", "other", "link", "kt", "dt"].forEach((name) => { if (draft[name] != null) form.elements[name].value = draft[name]; });
+      ["date", "item", "other", "link"].forEach((name) => { if (draft[name] != null) form.elements[name].value = draft[name]; });
+      if (draft.kt != null || draft.dt != null) form.elements.kt.value = draft.kt != null ? draft.kt : draft.dt;
+      if (draft.dt != null && draft.kt == null) form.dataset.restoreAmountType = "dt";
     } catch (_) {}
   }
   restoreFormDraft();
@@ -71,7 +73,7 @@
   calculator.addEventListener("touchmove", (event) => event.preventDefault(), { passive: false });
   let calculatorExpression = "";
   function showCalculator() { calculatorExpression = ""; calculatorDisplay.textContent = "0"; calculator.hidden = false; }
-  document.querySelector("#calculatorButton").addEventListener("click", showCalculator);
+  document.querySelector("#calculatorButton")?.addEventListener("click", showCalculator);
   calculator.addEventListener("click", (event) => {
     const button = event.target.closest("button");
     if (!button) return;
@@ -79,7 +81,7 @@
     if (button.id === "calculatorClear") calculatorExpression = "";
     else if (button.id === "calculatorBackspace") calculatorExpression = calculatorExpression.slice(0, -1);
     else if (button.id === "calculatorEquals") {
-      try { const safe = calculatorExpression.replace(/%/g, "/100"); const result = Function(`"use strict"; return (${safe})`)(); if (!Number.isFinite(result)) throw new Error(); document.querySelector("#kt").value = Number(result.toFixed(2)); calculator.hidden = true; return; } catch (_) { calculatorDisplay.textContent = "错误"; return; }
+      try { const safe = calculatorExpression.replace(/%/g, "/100"); const result = Function(`"use strict"; return (${safe})`)(); if (!Number.isFinite(result)) throw new Error(); document.querySelector("#amount").value = Number(result.toFixed(2)); calculator.hidden = true; return; } catch (_) { calculatorDisplay.textContent = "错误"; return; }
     } else if (button.dataset.calc) calculatorExpression += button.dataset.calc;
     calculatorDisplay.textContent = calculatorExpression || "0";
   });
@@ -90,7 +92,7 @@
   function getCachedRecords() { try { return JSON.parse(localStorage.getItem(CACHE_RECORDS_KEY) || "[]"); } catch (_) { return []; } }
   function cacheRecords(rows) { localStorage.setItem(CACHE_RECORDS_KEY, JSON.stringify(rows.slice(0, RECENT_RECORD_LIMIT))); }
   function renderRecent(rows) {
-    recentList.innerHTML = rows.length ? rows.map((row) => `<article class="recent-row"><time>${escapeHtml(recentDate(row))}</time><div class="recent-item"><strong>${escapeHtml(row.item)}</strong></div><span class="recent-amount">${Number(row.dt || row.kt || 0).toFixed(2)}</span>${row.link ? `<a class="pdf-button" href="${escapeHtml(row.link)}" target="_blank" rel="noopener noreferrer">PDF</a>` : '<span class="pdf-button is-disabled">PDF</span>'}${row.row ? `<button class="delete-button" type="button" data-row="${row.row}">删除</button>` : ""}</article>`).join("") : '<p class="empty">还没有本机记录</p>';
+    recentList.innerHTML = rows.length ? rows.map((row) => `<article class="recent-row"><time>${escapeHtml(recentDate(row))}</time><div class="recent-item"><strong>${escapeHtml(row.item)}</strong></div><span class="recent-amount">${Number(row.dt || row.kt || 0).toFixed(2)}</span>${row.link ? `<a class="pdf-button" href="${escapeHtml(row.link)}" target="_blank" rel="noopener noreferrer">PDF</a>` : '<span class="pdf-button is-placeholder" aria-hidden="true">PDF</span>'}${row.row ? `<button class="delete-button" type="button" data-row="${row.row}">删除</button>` : ""}</article>`).join("") : '<p class="empty">还没有本机记录</p>';
   }
   async function loadRecent() {
     const cached = getCachedRecords();
@@ -177,6 +179,7 @@
     localStorage.removeItem(FORM_DRAFT_KEY);
     await loadRecent();
     form.reset();
+    setAmountType("kt");
     date.value = displayDate(new Date());
     datePicker.value = new Date().toISOString().slice(0, 10);
     updateSerial();
@@ -211,6 +214,26 @@
     } catch (_) { setStatus("无法复制序号，请允许浏览器访问剪贴板。", "error"); }
   });
   document.querySelector("#otherClear").addEventListener("click", () => { document.querySelector("#other").value = ""; document.querySelector("#other").focus(); });
+  const amountEntry = document.querySelector("#amountEntry");
+  const amount = document.querySelector("#amount");
+  const amountTypeLabel = document.querySelector("#amountTypeLabel");
+  const amountTypeButton = document.querySelector("#amountTypeButton");
+  document.querySelector("#amountClear").addEventListener("click", () => { amount.value = ""; amount.focus(); });
+  function setAmountType(type) {
+    const isIncoming = type === "dt";
+    amountEntry.dataset.type = isIncoming ? "dt" : "kt";
+    amount.name = isIncoming ? "dt" : "kt";
+    amountTypeLabel.textContent = isIncoming ? "进账" : "出账";
+    amount.setAttribute("aria-label", isIncoming ? "进账金额" : "出账金额");
+    amountTypeButton.setAttribute("aria-label", isIncoming ? "切换为出账" : "切换为进账");
+    amountTypeButton.setAttribute("title", isIncoming ? "切换为出账" : "切换为进账");
+    amountEntry.classList.toggle("is-incoming", isIncoming);
+  }
+  amountTypeButton.addEventListener("click", () => {
+    setAmountType(amountEntry.dataset.type === "kt" ? "dt" : "kt");
+    saveFormDraft();
+  });
+  if (form.dataset.restoreAmountType === "dt") setAmountType("dt");
   document.querySelector("#selectionClose").addEventListener("click", () => { selectionPicker.hidden = true; });
   document.querySelector("#selectionList").addEventListener("click", (event) => { const button = event.target.closest(".selection-option"); if (!button) return; document.querySelector("#item").value = button.dataset.value; selectionPicker.hidden = true; });
   recentList.addEventListener("click", async (event) => {
