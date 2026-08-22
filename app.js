@@ -218,6 +218,7 @@
   const amount = document.querySelector("#amount");
   const amountTypeLabel = document.querySelector("#amountTypeLabel");
   const amountTypeButton = document.querySelector("#amountTypeButton");
+  const calculatorButton = document.querySelector("#calculatorButton");
   document.querySelector("#amountClear").addEventListener("click", () => { amount.value = ""; amount.focus(); });
   function setAmountType(type) {
     const isIncoming = type === "dt";
@@ -228,6 +229,7 @@
     amountTypeButton.setAttribute("aria-label", isIncoming ? "切换为出账" : "切换为进账");
     amountTypeButton.setAttribute("title", isIncoming ? "切换为出账" : "切换为进账");
     amountEntry.classList.toggle("is-incoming", isIncoming);
+    calculatorButton.hidden = isIncoming;
   }
   amountTypeButton.addEventListener("click", () => {
     setAmountType(amountEntry.dataset.type === "kt" ? "dt" : "kt");
